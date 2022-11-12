@@ -1,4 +1,5 @@
-const { Thought, User } = require('../models');
+const { Thought, User, Reaction } = require('../models');
+
 
 module.exports = {
 // /api/thoughts
@@ -13,14 +14,20 @@ getSingleThought(req, res) {
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: 'No thought with that ID' })
-          : res.json(user)
+          : res.json(thought)
       )
       .catch((err) => res.status(500).json(err));
 },
 createThought(req, res) {
     Thought.create(req.body)
-      .then({_id: {$push: User.thoughts}})
-      .then((dbUserData) => res.json(dbUserData))
+    .then((thought) => 
+      User.findOneAndUpdate(     
+        {_id:req.body.userId},
+        {$push: { thoughts: thought._id}},
+        {new: true}
+        )
+    )
+      .then((thought) => res.json(thought))
       .catch((err) => res.status(500).json(err));
   },
 updateThought(req, res) {
@@ -37,14 +44,50 @@ Thought.findOneAndUpdate(
     .catch((err) => res.status(500).json(err));
 },
 deleteThought(req, res) {
-    Thought.findOneAndDelete({ _id: req.params.thoughtId })
+    Thought.findOneAndRemove({ _id: req.params.thoughtId })
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: 'No thought with that ID' })
-          : res.status(200).json(thought)
+          :  User.findOneAndUpdate(
+            { thoughts: req.params.thoughtId },
+            { $pull: { thoughts: req.params.thoughtId } },
+            { new: true }
+          )
       )
-      .then(() => res.json({ message: 'Course and students deleted!' }))
+      .then(() => res.json({ message: 'Thought deleted!' }))
       .catch((err) => res.status(500).json(err));
 
+},
+addReaction(req, res) {
+  console.log('You are adding a reaction');
+  console.log(req.body);
+  Reaction.findOneAndUpdate(
+    { _id: req.params.thoughtId },
+    { $addToSet: { reactions: req.body.reactions } },
+    { runValidators: true, new: true }
+  )
+    .then((reaction) =>
+      !reaction
+        ? res
+            .status(404)
+            .json({ message: 'No reaction found with that ID :(' })
+        : res.json(reaction)
+    )
+    .catch((err) => res.status(500).json(err));
+},
+removeReaction(req, res) {
+  User.findOneAndUpdate(
+    { _id: req.params.userId },
+    { $pull: { reactions: req.params.reactionId } },
+    { runValidators: true, new: true }
+  )
+    .then((reaction) =>
+      !reaction
+        ? res
+            .status(404)
+            .json({ message: 'No reaction found with that ID :(' })
+        : res.json(reaction)
+    )
+    .catch((err) => res.status(500).json(err));
 },
 };
