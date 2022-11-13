@@ -61,9 +61,9 @@ deleteThought(req, res) {
 addReaction(req, res) {
   console.log('You are adding a reaction');
   console.log(req.body);
-  Reaction.findOneAndUpdate(
+  Thought.findOneAndUpdate(
     { _id: req.params.thoughtId },
-    { $addToSet: { reactions: req.body.reactions } },
+    { $addToSet: { reactions: req.body } },
     { runValidators: true, new: true }
   )
     .then((reaction) =>
@@ -76,9 +76,9 @@ addReaction(req, res) {
     .catch((err) => res.status(500).json(err));
 },
 removeReaction(req, res) {
-  User.findOneAndUpdate(
-    { _id: req.params.userId },
-    { $pull: { reactions: req.params.reactionId } },
+  Thought.findOneAndUpdate(
+    { _id: req.params.thoughtId },
+    { $pull: { reactions: {_id: req.params.reactionId} } },
     { runValidators: true, new: true }
   )
     .then((reaction) =>

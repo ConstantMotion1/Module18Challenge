@@ -17,7 +17,7 @@ module.exports = {
           .populate('friends')
           .then((user) =>
             !user
-              ? res.status(404).json({ message: 'No user with that ID' })
+              ? res.status(404).json({ message: 'No User with that ID' })
               : res.json(user)
           )
           .catch((err) => res.status(500).json(err));
@@ -35,7 +35,7 @@ module.exports = {
     )
         .then((course) =>
         !course
-            ? res.status(404).json({ message: 'No course with this id!' })
+            ? res.status(404).json({ message: 'No User with this id!' })
             : res.json(course)
         )
         .catch((err) => res.status(500).json(err));
@@ -44,7 +44,7 @@ module.exports = {
         User.findOneAndDelete({ _id: req.params.userId })
           .then((user) =>
             !user
-              ? res.status(404).json({ message: 'No user with that ID' })
+              ? res.status(404).json({ message: 'No User with that ID' })
               : User.deleteMany( {_id: { $in: user.thoughts }})
           )
           .then(() => res.json({ message: 'User and Thoughts deleted!' }))
